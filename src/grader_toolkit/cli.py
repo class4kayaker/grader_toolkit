@@ -32,4 +32,4 @@ def totaling():
             total = sum(arr)
             click.echo('[{:2d}] {:d}'.format(count, total))
         except:
-            click.echo('Error', color='red')
+            click.secho('Error', fg='red')
