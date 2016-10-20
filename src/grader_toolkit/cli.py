@@ -9,15 +9,15 @@ def cli_main():
     pass
 
 
-@click.group()
-def util():
+@cli_main.group(name='util')
+def cli_util():
     # type: () -> None
     """General cli utilities that are not directly tied to recording
     anything"""
     pass
 
 
-@click.command()
+@cli_util.command()
 def totaling():
     # type: () -> None
     """Sum lines of entered integers and display count and total for totalling
