@@ -1,0 +1,3 @@
+[console_scripts]
+py-grtk = grader_toolkit.cli:cli_main
+
