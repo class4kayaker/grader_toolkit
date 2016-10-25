@@ -25,14 +25,6 @@ class Student:
             raise ValueError('Invalid order value')
         return fmt.format(f=self.f_name, l=self.l_name)
 
-    def __str__(self):
-        # type: () -> typing.Text
-        return '{f_name} {l_name}({ID}): {email}'.format_map(self.__dict__)
-
-    def __getitem__(self, name):
-        # type: (typing.Text) -> typing.Any
-        return self.__dict__[name]
-
 
 class Assignment:
     __slots__ = ('assign_id', 'name')
@@ -41,14 +33,6 @@ class Assignment:
         # type: (int, typing.Text) -> None
         self.assign_id = assign_id
         self.name = name
-
-    def __str__(self):
-        # type: () -> typing.Text
-        return '{name}[{ID}]'.format_map(self.__dict__)
-
-    def __getitem__(self, name):
-        # type: (typing.Text) -> typing.Any
-        return self.__dict__[name]
 
 
 class Gradebook:
