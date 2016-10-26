@@ -255,9 +255,11 @@ class Gradebook:
     def get_grades(self):
         # type: () -> List[Grade]
         cur = self.conn.cursor()
-        cur.execute('SELECT s.student_id, FROM Grades g '
+        cur.execute('SELECT s.student_id, s.f_name, s.l_name, s.email, '
+                    'a.assign_id, a.name, g.grade, g.notes '
+                    'FROM Grades g '
                     'JOIN Students s ON g.student_id = s.student_id '
-                    'JOIN Assignments a ON a.assign_id = a.assign_id')
+                    'JOIN Assignments a ON g.assign_id = a.assign_id')
         stList = [
             Grade(Student(e[0], e[1], e[2], e[3]),
                   Assignment(e[4], e[5]),
@@ -270,17 +272,23 @@ class Gradebook:
     def get_grade_by_id(self, assign_id, student_id):
         # type: (int, int) -> Grade
         cur = self.conn.cursor()
-        cur.execute('SELECT * FROM Grades WHERE'
-                    'assign_id=? AND student_id=?',
+        cur.execute('SELECT s.student_id, s.f_name, s.l_name, s.email, '
+                    'a.assign_id, a.name, g.grade, g.notes '
+                    'FROM Grades g '
+                    'JOIN Students s ON g.student_id = s.student_id '
+                    'JOIN Assignments a ON g.assign_id = a.assign_id '
+                    'WHERE a.assign_id=? AND s.student_id=?',
                     (assign_id, student_id))
         e = cur.fetchone()
         cur.close()
-        return Grade(e[0], e[1], e[2], e[3])
+        return Grade(Student(e[0], e[1], e[2], e[3]),
+                     Assignment(e[4], e[5]),
+                     e[6], e[7])
 
     def delete_grade(self, assign_id, student_id):
         # type: (int, int) -> None
         cur = self.conn.cursor()
-        cur.execute('DELETE FROM Grades WHERE'
+        cur.execute('DELETE FROM Grades WHERE '
                     'assign_id=? AND student_id=?',
                     (assign_id, student_id))
         self.conn.commit()

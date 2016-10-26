@@ -107,9 +107,42 @@ def test_db_assignments(
         gbook.delete_assignment(ID)
     assert gbook.get_assignments() == []
     gbook.add_assignments([assignment_set[ID] for ID in assignment_set])
-    for s in gbook.get_assignments():
-        ID = s.assign_id
-        assert s == assignment_set[ID]
+    for a in gbook.get_assignments():
+        ID = a.assign_id
+        assert a == assignment_set[ID]
+    for ID in assignment_set:
+        gbook.delete_assignment(ID)
+    assert gbook.get_assignments() == []
+
+
+def test_db_grades(
+        gbook,  # type: grader_toolkit.Gradebook
+        student_set,  # type: Dict[int, grader_toolkit.Student]
+        assignment_set,  # type: Dict[int, grader_toolkit.Assignment]
+        grade_set  # type: Dict[typing.Tuple[int, int], grader_toolkit.Grade]
+):
+    # type: (...) -> None
+    gbook.add_students([student_set[ID] for ID in student_set])
+    gbook.add_assignments([assignment_set[ID] for ID in assignment_set])
+    for ID in grade_set:
+        gbook.add_grade(grade_set[ID])
+    for ID in grade_set:
+        st_id, a_id = ID
+        assert grade_set[ID] == gbook.get_grade_by_id(a_id, st_id)
+        gbook.delete_grade(a_id, st_id)
+    assert gbook.get_grades() == []
+    gbook.add_grades([grade_set[ID] for ID in grade_set])
+    for g in gbook.get_grades():
+        ID = (g.student.student_id,
+              g.assignment.assign_id)
+        assert g == grade_set[ID]
+    for ID in grade_set:
+        st_id, a_id = ID
+        gbook.delete_grade(a_id, st_id)
+    assert gbook.get_grades() == []
+    for ID in student_set:
+        gbook.delete_student(ID)
+    assert gbook.get_students() == []
     for ID in assignment_set:
         gbook.delete_assignment(ID)
     assert gbook.get_assignments() == []
