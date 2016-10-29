@@ -1,2 +1,4 @@
 click
+click-repl
 pyyaml
+sqlalchemy

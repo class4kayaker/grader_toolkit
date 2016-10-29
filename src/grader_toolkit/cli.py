@@ -1,4 +1,10 @@
 import click
+import click_repl
+import grader_toolkit
+import yaml
+from grader_toolkit import Student, Assignment, Grade
+import grader_toolkit.encoder
+import sqlalchemy
 
 
 @click.group()
@@ -7,6 +13,124 @@ def cli_main():
     """Utilites useful for entering, tracking, and analysing grades for local
     reference."""
     pass
+
+
+@cli_main.group(name='gradebook')
+@click.option('--dbase', default='sqlite://')
+@click.pass_context
+def cli_gradebook(ctx, dbase):
+    """Access to gradebook utilities"""
+    engine = sqlalchemy.create_engine(dbase)
+    grader_toolkit.gradebook.Base.metadata.create_all(engine)
+    grader_toolkit.Session.configure(bind=engine)
+    ctx.obj = grader_toolkit.Session()
+
+click_repl.register_repl(cli_gradebook)
+
+
+@cli_gradebook.group(name='add')
+def cli_gb_add():
+    """Add objects to gradebook"""
+    pass
+
+
+def get_entries(kws):
+    ret = {}
+    for kw in kws:
+        ret[kw] = click.prompt(*kws[kw])
+    return ret
+
+
+@cli_gb_add.command(name='students')
+@click.pass_obj
+def cli_gb_add_students(session):
+    """Add students to gradebook"""
+    try:
+        while True:
+            if click.getchar(echo='Done entering students? [yn]') == 'y':
+                break
+            s = Student(
+                **get_entries(
+                    {'id': ('Student ID:', int),
+                     'name': ('Name:', str),
+                     'email': ('Email:', str)}))
+            session.add(s)
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
+@cli_gb_add.command(name='assignments')
+@click.pass_obj
+def cli_gb_add_assignments(session, student_id, name, email):
+    """Add assignments to gradebook"""
+    try:
+        while True:
+            if click.getchar(echo='Done entering students? [yn]') == 'y':
+                break
+            a = Assignment(
+                **get_entries(
+                    {'name': ('Name:', str),
+                     'full_credit': ('Full Credit:', float)}))
+            session.add(a)
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
+@cli_gradebook.command(name='export')
+@click.option('--out', type=click.File(mode='w'))
+@click.pass_obj
+def cli_gb_export(session, out):
+    """Export gradebook"""
+    try:
+        data = {}
+        data['students'] = session.query(Student).all()
+        data['assignments'] = session.query(Assignment).all()
+        data['grades'] = session.query(Grade).all()
+        yaml.dump(data, stream=out)
+    except:
+        raise
+
+
+@cli_gradebook.command(name='import')
+@click.argument('infile', type=click.File(mode='r'))
+@click.pass_obj
+def cli_gb_import(session, infile):
+    """Import gradebook"""
+    try:
+        out = yaml.load(infile)
+        session.add_all(out['students'])
+        session.add_all(out['assignments'])
+        session.add_all(out['grades'])
+        session.commit()
+    except:
+        session.rollback()
+        raise
+
+
+@cli_gradebook.group(name='analyze')
+def cli_gb_analyze():
+    """Analysis tools"""
+    pass
+
+
+@cli_gb_analyze.command(name='students')
+@click.option('--out', type=click.File(mode='w'), default='-')
+@click.argument('name')
+@click.pass_obj
+def cli_gb_analyze_students(session, name, out):
+    """Analyze student grades
+
+    NAME"""
+    try:
+        stList = session.query(Student).filter(Student.name.like(name)).all()
+        for st in stList:
+            grader_toolkit.analyze.analyze_student(st, stream=out)
+    except:
+        pass
 
 
 @cli_main.group(name='util')

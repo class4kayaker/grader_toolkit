@@ -8,7 +8,9 @@ package = 'grader_toolkit'
 version = '0.1.0'
 dependencies = [
     'click',
+    'click-repl',
     'pyyaml',
+    'sqlalchemy'
 ]
 
 setup(

@@ -1,1 +1,1 @@
-from grader_toolkit.gradebook import Student, Assignment, Grade, Gradebook  # noqa: F401
+from grader_toolkit.gradebook import Student, Assignment, Grade, Session  # noqa: F401
