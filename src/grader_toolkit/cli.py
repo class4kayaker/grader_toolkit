@@ -16,14 +16,15 @@ def cli_main():
 
 
 @cli_main.group(name='gradebook')
-@click.option('--dbase', default='sqlite:///./grades.db')
+@click.option('--dbase', default='sqlite://')
 @click.pass_context
 def cli_gradebook(ctx, dbase):
     """Access to gradebook utilities"""
-    engine = sqlalchemy.create_engine(dbase)
-    grader_toolkit.gradebook.Base.metadata.create_all(engine)
-    grader_toolkit.Session.configure(bind=engine)
-    ctx.obj = grader_toolkit.Session()
+    if ctx.obj is None:
+        engine = sqlalchemy.create_engine(dbase)
+        grader_toolkit.gradebook.Base.metadata.create_all(engine)
+        grader_toolkit.Session.configure(bind=engine)
+        ctx.obj = grader_toolkit.Session()
 
 click_repl.register_repl(cli_gradebook)
 
@@ -84,6 +85,17 @@ def cli_gb_add_assignments(session, student_id, name, email):
     except:
         session.rollback()
         raise
+
+
+@cli_gradebook.group(name='edit')
+def cli_gb_edit():
+    pass
+
+
+@cli_gb_edit.command(name='grades')
+@click.pass_obj
+def cli_gb_edit_grades(session):
+    pass
 
 
 @cli_gradebook.command(name='export')
@@ -154,7 +166,7 @@ def cli_gb_list_students(session, out):
     try:
         stList = session.query(Student).all()
         for st in stList:
-            out.write(repr(st))
+            out.write('{0.name}[{0.id}]: {0.email}\n'.format(st))
     except:
         pass
 
