@@ -1,9 +1,10 @@
 import click
 import click_repl
 import grader_toolkit
-import yaml
+from ruamel import yaml
 from grader_toolkit import Student, Assignment, Grade
 import grader_toolkit.encoder
+import grader_toolkit.prompt
 import sqlalchemy
 
 
@@ -48,18 +49,18 @@ def cli_gb_add_students(session):
     """Add students to gradebook"""
     try:
         while True:
-            click.echo('Done entering students? [yn]', nl=False)
-            c = click.getchar()
-            click.echo()
-            if c == 'y':
-                break
             s = Student(
                 **get_entries(
                     [('id', 'Student ID:', int),
                      ('name', 'Name:', str),
                      ('email', 'Email:', str)]))
             session.add(s)
-        session.commit()
+            session.commit()
+            click.echo('Done entering students? [yn]', nl=False)
+            c = click.getchar()
+            click.echo()
+            if c == 'y':
+                break
     except:
         session.rollback()
         raise
@@ -71,17 +72,17 @@ def cli_gb_add_assignments(session, student_id, name, email):
     """Add assignments to gradebook"""
     try:
         while True:
-            click.echo('Done entering assignments? [yn]', nl=False)
-            c = click.getchar()
-            click.echo()
-            if c == 'y':
-                break
             a = Assignment(
                 **get_entries(
                     [('name', 'Name:', str),
                      ('full_credit', 'Full Credit:', float)]))
             session.add(a)
-        session.commit()
+            session.commit()
+            click.echo('Done entering assignments? [yn]', nl=False)
+            c = click.getchar()
+            click.echo()
+            if c == 'y':
+                break
     except:
         session.rollback()
         raise
@@ -95,11 +96,93 @@ def cli_gb_edit():
 @cli_gb_edit.command(name='grades')
 @click.pass_obj
 def cli_gb_edit_grades(session):
+    """Edit grades"""
+    try:
+        while True:
+            sname = grader_toolkit.prompt.column_prompt(
+                'Student name:',
+                session,
+                column=Student.name)
+            s = session.query(Student).filter(Student.name == sname).one()
+            aname = grader_toolkit.prompt.column_prompt(
+                'Assignment name:',
+                session,
+                column=Assignment.name)
+            a = session.query(Assignment)\
+                .filter(Assignment.name == aname).one()
+            try:
+                g = session.query(Grade).filter(
+                    sqlalchemy.and_(
+                        Grade.student_id == s.id,
+                        Grade.assignment_id == a.id)).one()
+            except sqlalchemy.orm.exc.NoResultFound:
+                g = Grade(
+                    student_id=s.id,
+                    assignment_id=a.id)
+                session.add(g)
+                session.commit()
+            g.grade = grader_toolkit.prompt.edit_prompt(
+                'Grade:',
+                default=str(g.grade),
+                convert=float)
+            notes = click.edit(text=g.notes)
+            if notes:
+                g.notes = notes
+            session.commit()
+            click.echo('Done editing grades? [yn]', nl=False)
+            c = click.getchar()
+            click.echo()
+            if c == 'y':
+                break
+    except:
+        session.rollback()
+        raise
+
+
+@cli_gradebook.group(name='view')
+def cli_gb_view():
     pass
 
 
+@cli_gb_view.command(name='grades')
+@click.pass_obj
+def cli_gb_view_students(session):
+    """View grades"""
+    while True:
+        sname = grader_toolkit.prompt.column_prompt(
+            'Student name:',
+            session,
+            column=Student.name)
+        s = session.query(Student).filter(Student.name == sname).one()
+        aname = grader_toolkit.prompt.column_prompt(
+            'Assignment name:',
+            session,
+            column=Assignment.name)
+        a = session.query(Assignment)\
+            .filter(Assignment.name == aname).one()
+        try:
+            g = session.query(Grade).filter(
+                sqlalchemy.and_(
+                    Grade.student_id == s.id,
+                    Grade.assignment_id == a.id)).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            g = Grade(
+                student_id=s.id,
+                assignment_id=a.id)
+            session.add(g)
+            session.commit()
+        click.edit(
+            text='Grade: {0.grade}\nNotes:\n{0.notes}'.format(g))
+        session.commit()
+        click.echo('Done viewing grades? [yn]', nl=False)
+        c = click.getchar()
+        click.echo()
+        if c == 'y':
+            break
+
+
 @cli_gradebook.command(name='export')
-@click.option('--out', type=click.File(mode='w'))
+@click.argument('out', type=click.File(mode='w'))
 @click.pass_obj
 def cli_gb_export(session, out):
     """Export gradebook"""

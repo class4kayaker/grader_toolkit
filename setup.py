@@ -9,7 +9,8 @@ version = '0.1.0'
 dependencies = [
     'click',
     'click-repl',
-    'pyyaml',
+    'ruamel.yaml',
+    'six',
     'sqlalchemy'
 ]
 

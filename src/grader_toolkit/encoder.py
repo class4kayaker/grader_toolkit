@@ -1,4 +1,4 @@
-import yaml
+from ruamel import yaml
 from grader_toolkit import Student, Assignment, Grade  # noqa: F401
 
 
@@ -8,7 +8,7 @@ class folded_str(str):
 
 def represent_folded(dumper, data):
     # type: (yaml.Dumper, folded_str) -> yaml.Node
-    return dumper.represent_scalar(u'tag:yaml:org,2002:str', data, style='>')
+    return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='>')
 
 yaml.add_representer(folded_str, represent_folded)
 

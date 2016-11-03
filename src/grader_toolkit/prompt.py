@@ -1,27 +1,38 @@
-from future import raise_from
 import prompt_toolkit
+from prompt_toolkit.contrib.completers import WordCompleter
+from six import raise_from
+# Typing imports
 import sqlalchemy  # noqa: F401
 from prompt_toolkit.document import Document  # noqa: F401
 from prompt_toolkit.completion import CompleteEvent, Completion  # noqa: F401
 try:
     import typing  # noqa: F401
+    T = typing.TypeVar('T')
 except:
     pass
+
+
+def edit_prompt(prompt,  # type: typing.Text
+                default=u'',  # type: typing.Text
+                convert=str,
+                allow_none=True):
+    # type: (...) -> T
+    result = prompt_toolkit.prompt(prompt, default=default)
+    if allow_none and result == '':
+        return None
+    else:
+        return convert(result)
 
 
 def column_prompt(prompt,  # type: typing.Text
                   session,  # type: sqlalchemy.Session
                   column=None,  # type: typing.Optional[sqlalchemy.Column]
-                  unique=False,  # type: bool
-                  convert=str,
-                  ccount=10):
+                  convert=str):
     # type: (...) -> typing.Any
-    c = ColumnCompleter(session, column, mxcount=10) if column else None
-    v = ExistanceValidator(session, column, convert=convert)\
-        if unique else None
+    c = WordCompleter([r for r, in session.query(column).all()])\
+        if column else None
     return convert(prompt_toolkit.prompt(prompt,
-                                         completer=c,
-                                         validator=v))
+                                         completer=c))
 
 
 class ColumnCompleter(prompt_toolkit.completion.Completer):

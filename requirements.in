@@ -1,2 +1,5 @@
 click
-pyyaml
+click-repl
+ruamel.yaml
+six
+SQLAlchemy
