@@ -172,7 +172,6 @@ def cli_gb_view_students(session):
             session.commit()
         click.edit(
             text='Grade: {0.grade}\nNotes:\n{0.notes}'.format(g))
-        session.commit()
         click.echo('Done viewing grades? [yn]', nl=False)
         c = click.getchar()
         click.echo()
@@ -204,18 +203,23 @@ def cli_gb_analyze():
 
 @cli_gb_analyze.command(name='students')
 @click.option('--out', type=click.File(mode='w'), default='-')
-@click.argument('name')
 @click.pass_obj
-def cli_gb_analyze_students(session, name, out):
+def cli_gb_analyze_students(session, out):
     """Analyze student grades
 
     NAME"""
-    try:
-        stList = session.query(Student).filter(Student.name.like(name)).all()
-        for st in stList:
-            grader_toolkit.analyze.analyze_student(st, stream=out)
-    except:
-        pass
+    while True:
+        sname = grader_toolkit.prompt.column_prompt(
+            'Student name:',
+            session,
+            column=Student.name)
+        s = session.query(Student).filter(Student.name == sname).one()
+        grader_toolkit.analyze_student(s, out)
+        click.echo('Done analysing students? [yn]', nl=False)
+        c = click.getchar()
+        click.echo()
+        if c == 'y':
+            break
 
 
 @cli_gradebook.group(name='list')
