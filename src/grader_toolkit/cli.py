@@ -1,7 +1,6 @@
 import click
 import click_repl
 import grader_toolkit
-from ruamel import yaml
 from grader_toolkit import Student, Assignment, Grade
 import grader_toolkit.encoder
 import grader_toolkit.prompt
@@ -186,14 +185,7 @@ def cli_gb_view_students(session):
 @click.pass_obj
 def cli_gb_export(session, out):
     """Export gradebook"""
-    try:
-        data = {}
-        data['students'] = session.query(Student).all()
-        data['assignments'] = session.query(Assignment).all()
-        data['grades'] = session.query(Grade).all()
-        yaml.dump(data, stream=out)
-    except:
-        raise
+    grader_toolkit.encoder.yaml_dump_session(session, out)
 
 
 @cli_gradebook.command(name='import')
@@ -201,16 +193,7 @@ def cli_gb_export(session, out):
 @click.pass_obj
 def cli_gb_import(session, infile):
     """Import gradebook"""
-    try:
-        out = yaml.load(infile)
-        session.add_all(out['students'])
-        session.add_all(out['assignments'])
-        session.add_all(out['grades'])
-        session.flush()
-        session.commit()
-    except:
-        session.rollback()
-        raise
+    grader_toolkit.encoder.yaml_load_session(session, infile)
 
 
 @cli_gradebook.group(name='analyze')

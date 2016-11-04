@@ -11,7 +11,8 @@ dependencies = [
     'click-repl',
     'ruamel.yaml',
     'six',
-    'sqlalchemy'
+    'sqlalchemy',
+    'typing'
 ]
 
 setup(

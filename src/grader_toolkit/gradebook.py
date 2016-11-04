@@ -12,10 +12,10 @@ class Student(Base):  # type: ignore
     email = sqlalchemy.Column(sqlalchemy.String(250), nullable=False)
 
     def __repr__(self):
-        return '<Student(id={}, name={}, email={})>'.format(
-            self.id,
-            self.name,
-            self.email)
+        return ('<Student(id={0.id!r},'
+                ' name={0.name!r},'
+                ' email={0.email!r})>').format(
+            self)
 
 
 class Assignment(Base):  # type: ignore
@@ -23,6 +23,12 @@ class Assignment(Base):  # type: ignore
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
     name = sqlalchemy.Column(sqlalchemy.String(250), nullable=False)
     full_credit = sqlalchemy.Column(sqlalchemy.Float, nullable=False)
+
+    def __repr__(self):
+        return ('<Assignment(id={0.id!r},'
+                ' name={0.name!r},'
+                ' full_credit={0.full_credit!r})>')\
+            .format(self)
 
 
 class Grade(Base):  # type: ignore
@@ -39,6 +45,13 @@ class Grade(Base):  # type: ignore
                                              back_populates='grades')
     grade = sqlalchemy.Column(sqlalchemy.Float)
     notes = sqlalchemy.Column(sqlalchemy.String(500))
+
+    def __repr__(self):
+        return ('<Grade(student_id={0.student_id!r},'
+                ' assignment_id={0.assignment_id!r},'
+                ' grade={0.grade!r}),'
+                ' notes={0.notes!r}>')\
+            .format(self)
 
 Student.grades = sqlalchemy.orm.relationship('Grade',
                                              order_by=Grade.assignment_id,

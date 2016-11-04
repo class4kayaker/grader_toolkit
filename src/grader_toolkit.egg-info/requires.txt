@@ -1,5 +1,0 @@
-click
-click-repl
-ruamel.yaml
-six
-sqlalchemy

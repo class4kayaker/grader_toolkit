@@ -3,3 +3,4 @@ click-repl
 ruamel.yaml
 six
 SQLAlchemy
+typing
