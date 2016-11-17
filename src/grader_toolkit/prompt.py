@@ -1,3 +1,4 @@
+import click
 import prompt_toolkit
 from prompt_toolkit.contrib.completers import WordCompleter
 # Typing imports
@@ -11,16 +12,34 @@ except:
     pass
 
 
-def edit_prompt(prompt,  # type: typing.Text
-                default=u'',  # type: typing.Text
-                convert=str,
-                allow_none=True):
+def short_edit_prompt(
+        prompt,  # type: typing.Text
+        default=u'',  # type: typing.Optional[typing.Text]
+        convert=str,
+        allow_none=True):
     # type: (...) -> T
     result = prompt_toolkit.prompt(prompt, default=default)
     if allow_none and result == '':
         return None
     else:
         return convert(result)
+
+
+def long_edit(i_text):
+    # type: (typing.Optional[typing.Text]) -> typing.Optional[typing.Text]
+    text = click.edit(text=i_text)
+    if text is not None:
+        lines = [
+            (l.strip() if l else '\n\n')
+            for l in text.split('\n')
+        ]
+        text = lines[0]
+        for l in lines[1:]:
+            if not l == '\n\n':
+                text = text.strip() + ' '
+            text += l
+        return text
+    return i_text
 
 
 def column_prompt(prompt,  # type: typing.Text

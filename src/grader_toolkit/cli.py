@@ -67,7 +67,7 @@ def cli_gb_add_students(session):
 
 @cli_gb_add.command(name='assignments')
 @click.pass_obj
-def cli_gb_add_assignments(session, student_id, name, email):
+def cli_gb_add_assignments(session):
     """Add assignments to gradebook"""
     try:
         while True:
@@ -93,18 +93,22 @@ def cli_gb_edit():
 
 
 @cli_gb_edit.command(name='grades')
+@click.option('--grade/--no-grade', default=True,
+              help='Edit grades')
+@click.option('--notes/--no-notes', default=True,
+              help='Edit notes')
 @click.pass_obj
-def cli_gb_edit_grades(session):
+def cli_gb_edit_grades(session, grade, notes):
     """Edit grades"""
     try:
         while True:
             sname = grader_toolkit.prompt.column_prompt(
-                'Student name:',
+                'Student name: ',
                 session,
                 column=Student.name)
             s = session.query(Student).filter(Student.name == sname).one()
             aname = grader_toolkit.prompt.column_prompt(
-                'Assignment name:',
+                'Assignment name: ',
                 session,
                 column=Assignment.name)
             a = session.query(Assignment)\
@@ -120,13 +124,15 @@ def cli_gb_edit_grades(session):
                     assignment_id=a.id)
                 session.add(g)
                 session.commit()
-            g.grade = grader_toolkit.prompt.edit_prompt(
-                'Grade:',
-                default=str(g.grade),
-                convert=float)
-            notes = click.edit(text=g.notes)
+            if grade:
+                g_in = str(g.grade) if (g.grade is not None) else ''
+                g.grade = grader_toolkit.prompt.short_edit_prompt(
+                    'Grade: ',
+                    default=g_in,
+                    convert=float)
             if notes:
-                g.notes = notes
+                g.notes = grader_toolkit.prompt.long_edit(
+                    g.notes)
             session.commit()
             click.echo('Done editing grades? [yn]', nl=False)
             c = click.getchar()
@@ -250,6 +256,24 @@ def cli_gb_list_assignments(session, out):
         stList = session.query(Student).all()
         for st in stList:
             out.write(repr(st))
+    except:
+        pass
+
+
+@cli_gb_list.command(name='grades')
+@click.option('--out', type=click.File(mode='w'), default='-')
+@click.pass_obj
+def cli_gb_list_grades(session, out):
+    """List assignments"""
+    try:
+        gList = session.query(Grade).all()
+        for g in gList:
+            out.write(
+                '''Student: {0.student.name}
+                Assignment: {0.assignment.name}
+                Grade: {0.grade}
+                Notes:
+                {0.notes}\n\n'''.format(g))
     except:
         pass
 
