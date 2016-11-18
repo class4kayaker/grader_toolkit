@@ -270,10 +270,10 @@ def cli_gb_list_grades(session, out):
         for g in gList:
             out.write(
                 '''Student: {0.student.name}
-                Assignment: {0.assignment.name}
-                Grade: {0.grade}
-                Notes:
-                {0.notes}\n\n'''.format(g))
+Assignment: {0.assignment.name}
+Grade: {0.grade}
+Notes:
+{0.notes}\n\n'''.format(g))
     except:
         pass
 
