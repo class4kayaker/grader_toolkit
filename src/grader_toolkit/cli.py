@@ -209,8 +209,9 @@ def cli_gb_analyze():
 
 @cli_gb_analyze.command(name='students')
 @click.option('--out', type=click.File(mode='w'), default='-')
+@click.option('--short/--no-short', default=False)
 @click.pass_obj
-def cli_gb_analyze_students(session, out):
+def cli_gb_analyze_students(session, out, short):
     """Analyze student grades
 
     NAME"""
@@ -219,13 +220,40 @@ def cli_gb_analyze_students(session, out):
             'Student name:',
             session,
             column=Student.name)
-        s = session.query(Student).filter(Student.name == sname).one()
-        grader_toolkit.analyze_student(s, out)
-        click.echo('Done analysing students? [yn]', nl=False)
-        c = click.getchar()
-        click.echo()
-        if c == 'y':
+        if sname == '':
             break
+        try:
+            s = session.query(Student).filter(Student.name == sname).one()
+            grader_toolkit.analyze_student(s, out, short)
+        except sqlalchemy.orm.exc.NoResultFound:
+            print('Student "{}" not found'.format(sname))
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            print('Unique record for "{}" not found'.format(sname))
+
+
+@cli_gb_analyze.command(name='assignments')
+@click.option('--out', type=click.File(mode='w'), default='-')
+@click.option('--short/--no-short', default=False)
+@click.pass_obj
+def cli_gb_analyze_assignments(session, out, short):
+    """Analyze assignment results
+
+    NAME"""
+    while True:
+        aname = grader_toolkit.prompt.column_prompt(
+            'Assignment name:',
+            session,
+            column=Assignment.name)
+        if aname == '':
+            break
+        try:
+            a = (session.query(Assignment)
+                 .filter(Assignment.name == aname).one())
+            grader_toolkit.analyze_student(a, out, short)
+        except sqlalchemy.orm.exc.NoResultFound:
+            print('Assignment "{}" not found'.format(aname))
+        except sqlalchemy.orm.exc.MultipleResultsFound:
+            print('Unique record for "{}" not found'.format(aname))
 
 
 @cli_gradebook.group(name='list')
