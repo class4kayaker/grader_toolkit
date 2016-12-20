@@ -114,3 +114,15 @@ def test_session_roundtrip(session, session2, str_stream, test_data):
                 grader_toolkit.Grade.assignment_id == g.assignment_id)
         ).one()
         assert repr(g) == repr(g2)
+
+
+def test_session_roundtrip_malformed(session, session2, str_stream, test_data):
+    session.add_all(test_data)
+    grader_toolkit.encoder.yaml_dump_session(session, str_stream)
+    str_stream.write('\nmalformed-data[[}}')
+    str_stream.seek(0)
+    with pytest.raises(yaml.YAMLError):
+        grader_toolkit.encoder.yaml_load_session(session2, str_stream)
+        assert session.query(grader_toolkit.Student).all() == []
+        assert session.query(grader_toolkit.Assignment).all() == []
+        assert session.query(grader_toolkit.Grade).all() == []
