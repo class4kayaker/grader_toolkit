@@ -15,7 +15,7 @@ class Student(Base):  # type: ignore
         return ('<Student(id={0.id!r},'
                 ' name={0.name!r},'
                 ' email={0.email!r})>').format(
-            self)
+                    self)
 
 
 class Assignment(Base):  # type: ignore
@@ -52,6 +52,7 @@ class Grade(Base):  # type: ignore
                 ' grade={0.grade!r}),'
                 ' notes={0.notes!r}>')\
             .format(self)
+
 
 Student.grades = sqlalchemy.orm.relationship('Grade',
                                              order_by=Grade.assignment_id,

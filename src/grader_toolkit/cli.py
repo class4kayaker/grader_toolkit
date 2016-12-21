@@ -26,6 +26,7 @@ def cli_gradebook(ctx, dbase):
         grader_toolkit.Session.configure(bind=engine)
         ctx.obj = grader_toolkit.Session()
 
+
 click_repl.register_repl(cli_gradebook)
 
 

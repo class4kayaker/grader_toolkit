@@ -20,6 +20,7 @@ def represent_folded(dumper, data):
     # type: (yaml.Dumper, folded_str) -> yaml.Node
     return dumper.represent_scalar(u'tag:yaml.org,2002:str', data, style='>')
 
+
 yaml.add_representer(folded_str, represent_folded)
 
 
@@ -35,6 +36,7 @@ def represent_student(dumper, data):
 def construct_student(loader, node):
     # type: (yaml.Loader, yaml.Node) -> Student
     return Student(**loader.construct_mapping(node))
+
 
 yaml.add_representer(Student, represent_student)
 yaml.add_constructor(u'!Student', construct_student)
@@ -53,6 +55,7 @@ def construct_assignment(loader, node):
     # type: (yaml.Loader, yaml.Node) -> Assignment
     return Assignment(**loader.construct_mapping(node))
 
+
 yaml.add_representer(Assignment, represent_assignment)
 yaml.add_constructor(u'!Assignment', construct_assignment)
 
@@ -70,6 +73,7 @@ def represent_grade(dumper, data):
 def construct_grade(loader, node):
     # type: (yaml.Loader, yaml.Node) -> Grade
     return Grade(**loader.construct_mapping(node))
+
 
 yaml.add_representer(Grade, represent_grade)
 yaml.add_constructor('!Grade', construct_grade)
