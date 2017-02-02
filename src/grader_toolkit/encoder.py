@@ -67,7 +67,7 @@ def represent_grade(dumper, data):
         {'student_id': data.student_id,
          'assignment_id': data.assignment_id,
          'grade': data.grade,
-         'notes': folded_str(data.notes)})
+         'notes': data.notes})
 
 
 def construct_grade(loader, node):
@@ -94,9 +94,12 @@ def yaml_load_session(session, stream):
     """Load yaml data into session"""
     try:
         out = yaml.load(stream)
-        session.add_all(out['students'])
-        session.add_all(out['assignments'])
-        session.add_all(out['grades'])
+        if out['students']:
+            session.add_all(out['students'])
+        if out['assignments']:
+            session.add_all(out['assignments'])
+        if out['grades']:
+            session.add_all(out['grades'])
         session.flush()
         session.commit()
     except:
