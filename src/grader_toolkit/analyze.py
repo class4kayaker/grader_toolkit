@@ -42,3 +42,10 @@ def analyze_assignment(assignment, stream, short=False):
     # type: (grader_toolkit.Student, typing.TextIO, bool) -> None
     stream.write('Assignment: {}\n'.format(assignment.name))
     analyze_numeric_grades(assignment.grades, stream)
+    if short:
+        return
+    for g in assignment.grades:
+        stream.write('Student: {}\n'.format(g.student.name))
+        stream.write('Grade: {0.grade}/{0.assignment.full_credit}\n'
+                     .format(g))
+        stream.write('Notes:\n{}\n'.format(g.notes))

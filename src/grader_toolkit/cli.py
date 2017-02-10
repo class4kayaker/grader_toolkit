@@ -125,15 +125,15 @@ def cli_gb_edit_grades(session, grade, notes):
                     assignment_id=a.id)
                 session.add(g)
                 session.commit()
+            if notes:
+                g.notes = grader_toolkit.prompt.long_edit(
+                    g.notes)
             if grade:
                 g_in = str(g.grade) if (g.grade is not None) else ''
                 g.grade = grader_toolkit.prompt.short_edit_prompt(
                     'Grade: ',
                     default=g_in,
                     convert=float)
-            if notes:
-                g.notes = grader_toolkit.prompt.long_edit(
-                    g.notes)
             session.commit()
             click.echo('Done editing grades? [yn]', nl=False)
             c = click.getchar()
@@ -250,7 +250,7 @@ def cli_gb_analyze_assignments(session, out, short):
         try:
             a = (session.query(Assignment)
                  .filter(Assignment.name == aname).one())
-            grader_toolkit.analyze_student(a, out, short)
+            grader_toolkit.analyze_assignment(a, out, short)
         except sqlalchemy.orm.exc.NoResultFound:
             print('Assignment "{}" not found'.format(aname))
         except sqlalchemy.orm.exc.MultipleResultsFound:
