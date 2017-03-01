@@ -26,24 +26,27 @@ def analyze_numeric_grades(grades, stream):
 
 
 def freq_grades(grades, stream, bins=10):
-    # type: (List[float], typing.TextIO, int) -> None
+    # type: (List[grader_toolkit.Grade], typing.TextIO, int) -> None
     if bins < 0:
         raise ValueError("Argument bins={} not valid (<0)".format(bins))
     if bins == 0:
         return
-    mxgrade = max(grades)
-    mngrade = min(grades)
-    gset = set(grades)
+    glist = [g.grade for g in grades]
+    mxgrade = max(glist)
+    mngrade = min(glist)
+    gset = set(glist)
     if len(gset) < bins:
         stream.write("{:^21s}|{:^10s}\n".format("Grade", "Count"))
         for grade in gset:
-            count = len([g for g in grades if g == grade])
+            count = len([g for g in glist if g == grade])
             stream.write("{:^21.4g}|{:^10.4g}\n".format(grade, count))
     else:
         binsize = (mxgrade-mngrade)/bins
         stream.write('{:^21s}|{:^10s}\n'.format("Band", "Count"))
         for i in range(bins):
-            count = len([g for g in grades if (i == int((g-mngrade)/binsize))])
+            count = len([g for g in glist
+                         if (mngrade+i*binsize <= g and
+                             g <= mxgrade+(i+1)*binsize)])
             stream.write("{:^10.4g}-{:^10.4g}|{:^10d}\n".format(
                 mngrade+i*binsize, mngrade+(i+1)*binsize, count))
 
@@ -65,7 +68,7 @@ def analyze_assignment(assignment, stream, short=False):
     # type: (grader_toolkit.Student, typing.TextIO, bool) -> None
     stream.write('Assignment: {}\n'.format(assignment.name))
     analyze_numeric_grades(assignment.grades, stream)
-    freq_grades([g.grade for g in assignment.grades], stream)
+    freq_grades(assignment.grades, stream)
     if short:
         return
     for g in assignment.grades:
