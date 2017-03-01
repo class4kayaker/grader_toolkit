@@ -57,7 +57,7 @@ def analyze_student(student, stream, short=False):
     analyze_numeric_grades(student.grades, stream)
     if short:
         return
-    for g in student.grades:
+    for g in sorted(student.grades, key=lambda g: g.assignment_id):
         stream.write('Assignment: {}\n'.format(g.assignment.name))
         stream.write('Grade: {0.grade}/{0.assignment.full_credit}\n'
                      .format(g))
@@ -71,7 +71,7 @@ def analyze_assignment(assignment, stream, short=False):
     freq_grades(assignment.grades, stream)
     if short:
         return
-    for g in assignment.grades:
+    for g in sorted(assignment.grades, key=lambda g: g.student.name):
         stream.write('Student: {}\n'.format(g.student.name))
         stream.write('Grade: {0.grade}/{0.assignment.full_credit}\n'
                      .format(g))
