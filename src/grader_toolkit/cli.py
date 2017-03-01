@@ -107,6 +107,8 @@ def cli_gb_edit_grades(session, grade, notes):
                 'Student name: ',
                 session,
                 column=Student.name)
+            if not sname:
+                break
             s = session.query(Student).filter(Student.name == sname).one()
             aname = grader_toolkit.prompt.column_prompt(
                 'Assignment name: ',
@@ -135,11 +137,6 @@ def cli_gb_edit_grades(session, grade, notes):
                     default=g_in,
                     convert=float)
             session.commit()
-            click.echo('Done editing grades? [yn]', nl=False)
-            c = click.getchar()
-            click.echo()
-            if c == 'y':
-                break
     except:
         session.rollback()
         raise
