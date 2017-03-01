@@ -149,13 +149,15 @@ def cli_gb_view():
 
 @cli_gb_view.command(name='grades')
 @click.pass_obj
-def cli_gb_view_students(session):
+def cli_gb_view_grades(session):
     """View grades"""
     while True:
         sname = grader_toolkit.prompt.column_prompt(
             'Student name:',
             session,
             column=Student.name)
+        if not sname:
+            break
         s = session.query(Student).filter(Student.name == sname).one()
         aname = grader_toolkit.prompt.column_prompt(
             'Assignment name:',
@@ -174,13 +176,8 @@ def cli_gb_view_students(session):
                 assignment_id=a.id)
             session.add(g)
             session.commit()
-        click.edit(
+        click.echo_via_pager(
             text='Grade: {0.grade}\nNotes:\n{0.notes}'.format(g))
-        click.echo('Done viewing grades? [yn]', nl=False)
-        c = click.getchar()
-        click.echo()
-        if c == 'y':
-            break
 
 
 @cli_gradebook.command(name='export')
