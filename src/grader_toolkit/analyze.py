@@ -41,15 +41,19 @@ def freq_grades(grades, stream, bins=10):
     gset = set(grades)
     if len(gset) < bins:
         stream.write("{:^21s}|{:^10s}\n".format("Grade", "Count"))
-        for grade in gset:
+        for grade in sorted(gset):
             count = len([g for g in grades if g == grade])
             stream.write("{:^21.4g}|{:^10.4g}\n".format(grade, count))
     else:
         binsize = (mxgrade-mngrade)/bins
         stream.write('{:^21s}|{:^10s}\n'.format("Band", "Count"))
+        count = len([g for g in grades
+                     if (g == mngrade)])
+        stream.write("{:^21.4g}|{:^10d}\n".format(
+                mngrade, count))
         for i in range(bins):
             count = len([g for g in grades
-                         if (mngrade+i*binsize <= g and
+                         if (mngrade+i*binsize < g and
                              g <= mxgrade+(i+1)*binsize)])
             stream.write("{:^10.4g}-{:^10.4g}|{:^10d}\n".format(
                 mngrade+i*binsize, mngrade+(i+1)*binsize, count))
