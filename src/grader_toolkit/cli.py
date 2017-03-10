@@ -1,6 +1,7 @@
 import click
 import click_repl
 import grader_toolkit
+import grader_toolkit.interface
 from grader_toolkit import Student, Assignment, Grade
 import grader_toolkit.encoder
 import grader_toolkit.prompt
@@ -186,6 +187,32 @@ def cli_gb_view_grades(session):
 def cli_gb_export(session, out):
     """Export gradebook"""
     grader_toolkit.encoder.yaml_dump_session(session, out)
+
+
+@cli_gradebook.group(name='interface')
+@click.pass_obj
+def cli_gb_interface(session):
+    pass
+
+
+@cli_gb_interface.command(name='upload')
+@click.argument('aname')
+@click.option('--out', type=click.Path())
+@click.option('--fmt',
+              type=click.Choice(grader_toolkit.interface.upload_formats.keys())
+              )
+@click.option('--gtemplate', type=click.File(mode='r'))
+@click.pass_obj
+def cli_gb_interface_upload(session, aname, out, fmt, gtemplate):
+    """Generate """
+    try:
+        a = (session.query(Assignment)
+             .filter(Assignment.name == aname).one())
+        grader_toolkit.interface.upload_formats[fmt](a, gtemplate, out)
+    except sqlalchemy.orm.exc.NoResultFound:
+        print('Assignment "{}" not found'.format(aname))
+    except sqlalchemy.orm.exc.MultipleResultsFound:
+        print('Unique record for "{}" not found'.format(aname))
 
 
 @cli_gradebook.command(name='import')

@@ -29,15 +29,6 @@ def long_edit(i_text):
     # type: (typing.Optional[typing.Text]) -> typing.Optional[typing.Text]
     text = click.edit(text=i_text)
     if text is not None:
-        lines = [
-            (l.strip() if l else '\n\n')
-            for l in text.split('\n')
-        ]
-        text = lines[0]
-        for l in lines[1:]:
-            if not l == '\n\n':
-                text = text.strip() + ' '
-            text += l
         return text
     return i_text
 
