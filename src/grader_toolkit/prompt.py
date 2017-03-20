@@ -22,7 +22,10 @@ def short_edit_prompt(
     if allow_none and result == '':
         return None
     else:
-        return convert(result)
+        try:
+            return convert(result)
+        except ValueError:
+            return None
 
 
 def long_edit(i_text):
