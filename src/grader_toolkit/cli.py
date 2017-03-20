@@ -99,10 +99,13 @@ def cli_gb_edit():
               help='Edit grades')
 @click.option('--notes/--no-notes', default=True,
               help='Edit notes')
+@click.option('--rubric', type=click.File('r'),
+              help='Default template file for notes (rubric).')
 @click.pass_obj
-def cli_gb_edit_grades(session, grade, notes):
+def cli_gb_edit_grades(session, grade, notes, rubric):
     """Edit grades"""
     try:
+        rubric_text = rubric.read()
         while True:
             sname = grader_toolkit.prompt.column_prompt(
                 'Student name: ',
@@ -129,8 +132,10 @@ def cli_gb_edit_grades(session, grade, notes):
                 session.add(g)
                 session.commit()
             if notes:
-                g.notes = grader_toolkit.prompt.long_edit(
-                    g.notes)
+                if not g.notes:
+                    g.notes = grader_toolkit.prompt.long_edit(rubric_text)
+                else:
+                    g.notes = grader_toolkit.prompt.long_edit(g.notes)
             if grade:
                 g_in = str(g.grade) if (g.grade is not None) else ''
                 g.grade = grader_toolkit.prompt.short_edit_prompt(
@@ -178,7 +183,11 @@ def cli_gb_view_grades(session):
             session.add(g)
             session.commit()
         click.echo_via_pager(
-            text='Grade: {0.grade}\nNotes:\n{0.notes}'.format(g))
+            text=('Student: {0.student.name}\n'
+                  'Assignment: {0.assignment.name}\n'
+                  'Grade: {0.grade}\n'
+                  'Notes:\n'
+                  '{0.notes}').format(g))
 
 
 @cli_gradebook.command(name='export')
