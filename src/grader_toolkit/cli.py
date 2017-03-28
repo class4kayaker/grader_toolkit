@@ -282,17 +282,22 @@ def cli_gb_analyze_students(session, out, short):
 @cli_gb_analyze.command(name='assignments')
 @click.option('--out', type=click.File(mode='w'), default='-')
 @click.option('--short/--no-short', default=False)
+@click.option('--assignment', '-a', default="",
+              help="Name of assignment to be analyzed")
 @click.pass_obj
-def cli_gb_analyze_assignments(session, out, short):
+def cli_gb_analyze_assignments(session, out, short, assignment):
     """Analyze assignment results
 
     NAME"""
     while True:
-        aname = grader_toolkit.prompt.column_prompt(
-            'Assignment name:',
-            session,
-            column=Assignment.name)
-        if aname == '':
+        if not assignment:
+            aname = grader_toolkit.prompt.column_prompt(
+                'Assignment name:',
+                session,
+                column=Assignment.name)
+        else:
+            aname = assignment
+        if not aname:
             break
         try:
             a = (session.query(Assignment)
@@ -302,6 +307,8 @@ def cli_gb_analyze_assignments(session, out, short):
             print('Assignment "{}" not found'.format(aname))
         except sqlalchemy.orm.exc.MultipleResultsFound:
             print('Unique record for "{}" not found'.format(aname))
+        if assignment:
+            break
 
 
 @cli_gradebook.group(name='list')
