@@ -99,25 +99,40 @@ def cli_gb_edit():
               help='Edit grades')
 @click.option('--notes/--no-notes', default=True,
               help='Edit notes')
-@click.option('--rubric', type=click.File('r'),
+@click.option('--rubric', type=click.File('r'), default=None,
               help='Default template file for notes (rubric).')
+@click.option('--assignment', '-a', default="",
+              help='Name of assignment to be graded')
+@click.option('--name', '-n', default="",
+              help="Name of student to be graded")
 @click.pass_obj
-def cli_gb_edit_grades(session, grade, notes, rubric):
+def cli_gb_edit_grades(session, grade, notes, rubric, assignment, name):
     """Edit grades"""
     try:
-        rubric_text = rubric.read()
+        if rubric:
+            rubric_text = rubric.read()
+        else:
+            rubric_text = ""
         while True:
-            sname = grader_toolkit.prompt.column_prompt(
-                'Student name: ',
-                session,
-                column=Student.name)
+            if not name:
+                sname = grader_toolkit.prompt.column_prompt(
+                    'Student name: ',
+                    session,
+                    column=Student.name)
+            else:
+                sname = name
             if not sname:
                 break
             s = session.query(Student).filter(Student.name == sname).one()
-            aname = grader_toolkit.prompt.column_prompt(
-                'Assignment name: ',
-                session,
-                column=Assignment.name)
+            if not assignment:
+                aname = grader_toolkit.prompt.column_prompt(
+                    'Assignment name: ',
+                    session,
+                    column=Assignment.name)
+            else:
+                aname = assignment
+            if not aname:
+                break
             a = session.query(Assignment)\
                 .filter(Assignment.name == aname).one()
             try:
@@ -143,6 +158,8 @@ def cli_gb_edit_grades(session, grade, notes, rubric):
                     default=g_in,
                     convert=float)
             session.commit()
+            if name and assignment:
+                break
     except:
         session.rollback()
         raise
