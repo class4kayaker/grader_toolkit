@@ -41,7 +41,10 @@ def column_prompt(prompt,  # type: typing.Text
                   column=None,  # type: typing.Optional[sqlalchemy.Column]
                   convert=str):
     # type: (...) -> typing.Any
-    c = WordCompleter([r for r, in session.query(column).all()])\
-        if column else None
+    if column:
+        c = WordCompleter([r for r, in session.query(column).all()],
+                          match_middle=True)
+    else:
+        c = None
     return convert(prompt_toolkit.prompt(prompt,
                                          completer=c))
